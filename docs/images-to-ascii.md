@@ -107,15 +107,34 @@ asciix                  # no args, on a terminal
 asciix tui ~/Pictures   # explicit directory
 ```
 
-The main menu offers: 1) convert images, 2) play video, 3) create an xfetch
-logo, 4) quit.
+A full-screen, keyboard-driven UI (in English). Main menu: **1)** convert
+images, **2)** play video, **3)** create an xfetch logo, **4)** quit.
 
-For images the UI lets you:
+### Images screen
 
-1. Pick a **group of images** (`todo`, `1,3,5`, ranges `2-4`).
-2. Choose a **preset** (`logo`/`wallpaper`) or style, width and color manually.
-3. **Tone/color adjustments**: automatic or custom (contrast, gamma,
-   brightness, saturation, invert, dither).
-4. Preview in the terminal and/or **save** to `txt`, `html`, `png` or `jpg`
-   (with canvas/`--px` and `cover`).
-5. Change directory (`d`) or quit (`q`).
+The left pane lists the images in the directory; the right pane has **every
+option** with live editing:
+
+- **Files**: `space` to select/deselect, `a` select all, `n` none, `d` change
+  directory. If nothing is selected, all images are used.
+- **Tab** switches between the file list and the options.
+- Navigate options with `↑/↓`; change values with `←/→`; `space` toggles;
+  `enter` edits a value or runs an action.
+- **Options**: preset, style, width, height, color, invert; auto-contrast,
+  gamma, brightness, saturation, clip, dither, threshold, custom ramp; output
+  format (`term`/`txt`/`html`/`png`/`jpg`), output directory, recursive; image
+  export: canvas (`--px`), cover, font, font size, background, JPEG quality,
+  letter/line spacing.
+- **Actions**: *Preview selected* (`p`) and *Convert / Save selected* (`s`).
+- `q`/`Esc` go back.
+
+### Video screen
+
+Pick the file, style, width, fps, color, invert, loop and threshold, then
+choose **Play**. Press `Ctrl+C` to stop playback and return to the UI.
+
+### xfetch screen
+
+Pick the image, name, style and width, optionally update `config.jsonc`, then
+choose **Create logo**.
+

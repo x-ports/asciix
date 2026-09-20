@@ -58,12 +58,14 @@ when there is a terminal; otherwise it prints the help.
 asciix tui [directory]
 ```
 
-Main menu: 1) convert images, 2) play video, 3) create an xfetch logo, 4) quit.
-For images it lets you pick a preset or style/width/color, tone/color
-adjustments (automatic or custom), preview, and save to `txt`/`html`/`png`/`jpg`.
+Full-screen keyboard UI (English). Main menu: 1) convert images, 2) play video,
+3) create an xfetch logo, 4) quit. The images screen has a file list with
+multi-selection and an options pane with **every** filter and export setting
+(see [images-to-ascii.md](images-to-ascii.md#interactive-ui-tui)). Arrow keys
+navigate, `←/→` change values, `space` toggles, `enter` edits/runs, `tab`
+switches pane, `q` back.
 
-It covers almost everything from the CLI. Only in the CLI: `--threshold`,
-`--ramp`, `--letter-spacing`, `--line-spacing`, `--bg`, `--quality` and `-r`.
+It covers all CLI options.
 
 ## Video
 
