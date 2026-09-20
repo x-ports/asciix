@@ -19,14 +19,15 @@ binary needs nothing to print or save ASCII.
 curl -fsSL https://raw.githubusercontent.com/x-ports/asciix/main/install.sh | bash
 ```
 
-The script detects your distro, installs the optional dependencies (ffmpeg,
-ImageMagick + Pango, a suitable font) and installs `asciix` into
-`~/.local/bin`.
+The script detects your distro and installs everything needed:
+ffmpeg (video), ImageMagick + Pango (PNG/JPG export), fonts — including Noto
+Sans CJK for the `chinese`/`japanese` styles — and Go if it is missing or older
+than 1.24 (distro package, falling back to the official Go toolchain in
+`~/.local/share/asciix/go`). On Arch and Homebrew it also tries to install a
+Nerd Font for the `nerd` style. At the end it prints a **feature check** so you
+can see what is available.
 
-If Go is missing **or older than 1.24**, the script installs it automatically:
-first it tries your distro package, and if that is unavailable or too old it
-downloads the official Go toolchain (into `~/.local/share/asciix/go`). So you
-do not need Go preinstalled.
+`asciix` itself goes into `~/.local/bin`.
 
 Useful flags (with `curl | bash`, pass them after `bash -s --`):
 

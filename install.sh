@@ -170,8 +170,8 @@ MEDIA_PKGS=()
 FONT_PKGS=()
 case "$PM" in
 pacman)
-	GO_PKGS=(go)
-	MEDIA_PKGS=(ffmpeg imagemagick)
+	GO_PKGS=(go git)
+	MEDIA_PKGS=(ffmpeg imagemagick pango)
 	FONT_PKGS=(adwaita-fonts noto-fonts noto-fonts-cjk)
 	;;
 apt)
@@ -195,10 +195,17 @@ apk)
 	FONT_PKGS=(font-noto font-freefont font-noto-cjk)
 	;;
 brew)
-	GO_PKGS=(go)
+	GO_PKGS=(go git)
 	MEDIA_PKGS=(ffmpeg imagemagick)
 	FONT_PKGS=(font-dejavu font-noto-sans-mono font-noto-sans-cjk)
 	;;
+esac
+
+# Optional: a Nerd Font (for the `nerd` style). Not all distros package one.
+NERD_PKGS=()
+case "$PM" in
+pacman) NERD_PKGS=(ttf-nerd-fonts-symbols) ;;
+brew) NERD_PKGS=(font-hack-nerd-font) ;;
 esac
 
 download() { # url dest
@@ -219,6 +226,41 @@ install_dependencies() {
 	log "installing dependencies with $PM"
 	pkg_install "${MEDIA_PKGS[@]}" || warn "could not install the image/video tools"
 	pkg_install "${FONT_PKGS[@]}" || warn "could not install the fonts"
+	if [ "${#NERD_PKGS[@]}" -gt 0 ]; then
+		pkg_install "${NERD_PKGS[@]}" || warn "could not install a Nerd Font (optional, only for the 'nerd' style)"
+	fi
+}
+
+# Prints which optional features are available after installation.
+verify_features() {
+	echo
+	echo "Feature check:"
+	if command -v ffmpeg >/dev/null 2>&1; then
+		printf '  [x] video (ffmpeg)\n'
+	else
+		printf '  [ ] video (ffmpeg) — install ffmpeg to use "asciix video"\n'
+	fi
+	if command -v magick >/dev/null 2>&1 || command -v convert >/dev/null 2>&1; then
+		if (magick -list format 2>/dev/null || convert -list format 2>/dev/null || true) | grep -i pango >/dev/null 2>&1; then
+			printf '  [x] png/jpg export (ImageMagick + Pango)\n'
+		else
+			printf '  [ ] png/jpg export — ImageMagick installed but without Pango\n'
+		fi
+	else
+		printf '  [ ] png/jpg export — install ImageMagick with Pango\n'
+	fi
+	local fonts
+	fonts="$(fc-list 2>/dev/null || true)"
+	if printf '%s' "$fonts" | grep -i "CJK" >/dev/null 2>&1; then
+		printf '  [x] Chinese/Japanese fonts (Noto Sans CJK)\n'
+	else
+		printf '  [ ] Chinese/Japanese fonts — install noto CJK\n'
+	fi
+	if printf '%s' "$fonts" | grep -i "nerd" >/dev/null 2>&1; then
+		printf '  [x] Nerd Font (nerd style)\n'
+	else
+		printf '  [ ] Nerd Font (nerd style) — install a Nerd Font\n'
+	fi
 }
 
 # ---------------------------------------------------------------- Go --------
@@ -395,6 +437,8 @@ case ":$PATH:" in
 	printf '    export PATH="%s:$PATH"\n' "$BIN_DIR"
 	;;
 esac
+
+verify_features
 
 echo
 echo "Examples:"
