@@ -2,7 +2,7 @@ BINARY := asciix
 PREFIX ?= $(HOME)/.local/bin
 GO ?= go
 
-.PHONY: build install uninstall fmt vet check clean snapshot release
+.PHONY: build install uninstall fmt vet check clean
 
 build:
 	$(GO) build -o $(BINARY) .
@@ -27,9 +27,3 @@ check: vet
 clean:
 	rm -f $(BINARY)
 	rm -rf dist
-
-snapshot:
-	goreleaser release --snapshot --clean
-
-release:
-	goreleaser release --clean
