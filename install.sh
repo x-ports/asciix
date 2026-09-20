@@ -9,7 +9,7 @@
 #
 # Options (with curl | bash, pass them after `bash -s --`):
 #   --prefix DIR     Install directory (default ~/.local/bin)
-#   --no-deps        Do not install system dependencies
+#   --no-deps        Do not install system dependencies (ffmpeg/ImageMagick/fonts)
 #   --deps-only      Only install dependencies, not asciix
 #   --source         Force building from source
 #   --binary         Force downloading the prebuilt binary
@@ -19,6 +19,11 @@
 # Environment variables:
 #   ASCIIX_REPO      repo without scheme (default x-ports/asciix on GitHub)
 #   ASCIIX_VERSION   same as --version
+#   ASCIIX_GO_DIR    where to unpack a downloaded Go toolchain
+#                    (default ~/.local/share/asciix/go)
+#
+# Note: building from source needs Go >= 1.24. If your distro's Go is missing
+# or too old, the script downloads the official toolchain automatically.
 #
 set -euo pipefail
 
@@ -29,6 +34,8 @@ PREFIX=""
 INSTALL_DEPS=1
 DEPS_ONLY=0
 METHOD="auto"
+GO_MIN_MAJOR=1
+GO_MIN_MINOR=24
 
 usage() {
 	cat <<'EOF'
@@ -38,7 +45,7 @@ Usage: install.sh [options]
 
 Options:
   --prefix DIR     Install directory (default ~/.local/bin)
-  --no-deps        Do not install system dependencies
+  --no-deps        Do not install system dependencies (ffmpeg/ImageMagick/fonts)
   --deps-only      Only install dependencies, not asciix
   --source         Force building from source
   --binary         Force downloading the prebuilt binary
@@ -48,6 +55,10 @@ Options:
 Environment:
   ASCIIX_REPO      repo without scheme (default x-ports/asciix on GitHub)
   ASCIIX_VERSION   same as --version
+  ASCIIX_GO_DIR    where to unpack a downloaded Go toolchain
+
+If Go is missing or too old, it is installed automatically (distro package,
+falling back to the official Go toolchain).
 
 Remote usage:
   curl -fsSL https://raw.githubusercontent.com/x-ports/asciix/main/install.sh | bash
@@ -104,6 +115,7 @@ case "$ARCH" in
 x86_64 | amd64) ARCH=amd64 ;;
 aarch64 | arm64) ARCH=arm64 ;;
 esac
+OSNAME="$(echo "$OS" | tr '[:upper:]' '[:lower:]')"
 
 SUDO=""
 if [ "$(id -u)" -ne 0 ] && command -v sudo >/dev/null 2>&1; then
@@ -189,6 +201,16 @@ brew)
 	;;
 esac
 
+download() { # url dest
+	if command -v curl >/dev/null 2>&1; then
+		curl -fsSL "$1" -o "$2"
+	elif command -v wget >/dev/null 2>&1; then
+		wget -qO "$2" "$1"
+	else
+		return 1
+	fi
+}
+
 install_dependencies() {
 	if [ "$PM" = none ]; then
 		warn "unknown package manager; install manually: ffmpeg, ImageMagick (with Pango) and a font with braille/block glyphs"
@@ -199,18 +221,66 @@ install_dependencies() {
 	pkg_install "${FONT_PKGS[@]}" || warn "could not install the fonts"
 }
 
-need_go() {
-	if command -v go >/dev/null 2>&1; then
+# ---------------------------------------------------------------- Go --------
+go_version_ok() {
+	command -v go >/dev/null 2>&1 || return 1
+	local v maj min rest
+	v="$(go env GOVERSION 2>/dev/null || go version 2>/dev/null | awk '{print $3}')"
+	v="${v#go}"
+	maj="${v%%.*}"
+	rest="${v#*.}"
+	min="${rest%%[!0-9]*}"
+	[ -n "$maj" ] && [ -n "$min" ] || return 1
+	if [ "$maj" -gt "$GO_MIN_MAJOR" ]; then return 0; fi
+	[ "$maj" -eq "$GO_MIN_MAJOR" ] && [ "$min" -ge "$GO_MIN_MINOR" ]
+}
+
+install_go_tarball() {
+	local ver url dir tmp
+	command -v tar >/dev/null 2>&1 || return 1
+	log "fetching the latest Go version"
+	ver="$(download "https://go.dev/VERSION?m=text" /dev/stdout 2>/dev/null | head -1 || true)"
+	case "$ver" in
+	go*) ;;
+	*) ver="go${GO_MIN_MAJOR}.${GO_MIN_MINOR}.0" ;;
+	esac
+	url="https://go.dev/dl/${ver}.${OSNAME}-${ARCH}.tar.gz"
+	dir="${ASCIIX_GO_DIR:-$HOME/.local/share/asciix/go}"
+	tmp="$(mktemp -d)"
+	log "downloading $url"
+	download "$url" "$tmp/go.tar.gz" || {
+		rm -rf "$tmp"
+		return 1
+	}
+	mkdir -p "$dir"
+	tar -C "$dir" --strip-components=1 -xzf "$tmp/go.tar.gz" || {
+		rm -rf "$tmp"
+		return 1
+	}
+	rm -rf "$tmp"
+	export GOROOT="$dir"
+	export PATH="$dir/bin:$PATH"
+	log "Go installed at $dir ($("$dir/bin/go" env GOVERSION 2>/dev/null))"
+}
+
+# Ensures a usable Go toolchain: existing -> distro package -> official tarball.
+ensure_go() {
+	if go_version_ok; then
 		return 0
 	fi
-	[ "$PM" = none ] && return 1
-	log "installing Go"
-	pkg_install "${GO_PKGS[@]}" || return 1
-	command -v go >/dev/null 2>&1
+	if [ "$PM" != none ]; then
+		log "installing Go with $PM"
+		pkg_install "${GO_PKGS[@]}" || true
+		if go_version_ok; then
+			return 0
+		fi
+		warn "the package manager did not provide Go >= ${GO_MIN_MAJOR}.${GO_MIN_MINOR}; using the official toolchain"
+	fi
+	install_go_tarball || return 1
+	go_version_ok
 }
 
 # ------------------------------------------------------------------ source ----
-# Are we inside the repo (local script)?
 find_source() {
 	local d
 	for d in "$PWD" "$(dirname "${BASH_SOURCE[0]:-$0}")"; do
@@ -224,20 +294,26 @@ find_source() {
 }
 
 release_url() {
-	local osname
-	osname="$(echo "$OS" | tr '[:upper:]' '[:lower:]')"
 	if [ "$VERSION" = latest ]; then
-		echo "https://github.com/$REPO/releases/latest/download/asciix_${osname}_${ARCH}.tar.gz"
+		echo "https://github.com/$REPO/releases/latest/download/asciix_${OSNAME}_${ARCH}.tar.gz"
 	else
-		echo "https://github.com/$REPO/releases/download/${VERSION}/asciix_${osname}_${ARCH}.tar.gz"
+		echo "https://github.com/$REPO/releases/download/${VERSION}/asciix_${OSNAME}_${ARCH}.tar.gz"
 	fi
+}
+
+build_here() { # dir
+	mkdir -p "$BIN_DIR"
+	(cd "$1" && go build -o "$BIN_DIR/asciix" .)
 }
 
 install_from_source() {
 	local src="$1" tmp=""
+	ensure_go || return 1
 	if [ -z "$src" ]; then
-		command -v git >/dev/null 2>&1 || return 1
-		need_go || return 1
+		command -v git >/dev/null 2>&1 || {
+			warn "git is required to fetch the source"
+			return 1
+		}
 		tmp="$(mktemp -d)"
 		log "cloning $REPO"
 		git clone --depth 1 "https://github.com/$REPO.git" "$tmp/asciix" || {
@@ -245,12 +321,9 @@ install_from_source() {
 			return 1
 		}
 		src="$tmp/asciix"
-	else
-		need_go || return 1
 	fi
 	log "building asciix"
-	mkdir -p "$BIN_DIR"
-	(cd "$src" && go build -o "$BIN_DIR/asciix" .)
+	build_here "$src"
 	if [ -n "$tmp" ]; then rm -rf "$tmp"; fi
 	return 0
 }
@@ -258,20 +331,12 @@ install_from_source() {
 install_from_release() {
 	local url tmp bin
 	url="$(release_url)"
-	command -v curl >/dev/null 2>&1 || command -v wget >/dev/null 2>&1 || return 1
 	tmp="$(mktemp -d)"
 	log "downloading binary: $url"
-	if command -v curl >/dev/null 2>&1; then
-		curl -fsSL "$url" -o "$tmp/asciix.tar.gz" || {
-			rm -rf "$tmp"
-			return 1
-		}
-	else
-		wget -qO "$tmp/asciix.tar.gz" "$url" || {
-			rm -rf "$tmp"
-			return 1
-		}
-	fi
+	download "$url" "$tmp/asciix.tar.gz" || {
+		rm -rf "$tmp"
+		return 1
+	}
 	tar -xzf "$tmp/asciix.tar.gz" -C "$tmp" || {
 		rm -rf "$tmp"
 		return 1

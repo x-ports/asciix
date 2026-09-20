@@ -4,7 +4,7 @@
 
 | Component | Required? | For |
 | --- | --- | --- |
-| Go 1.24+ | Only to build | Compile the binary |
+| Go 1.24+ | Only to build | Compile the binary (auto-installed by `install.sh`) |
 | ffmpeg / ffprobe | Only for `asciix video` | Read video frames |
 | ImageMagick (`magick` or `convert`) + Pango | Only for `png`/`jpg` export | Rasterize ASCII to an image |
 | A monospaced font with blocks/braille | Recommended | Keep the exported image grid aligned |
@@ -22,6 +22,11 @@ curl -fsSL https://raw.githubusercontent.com/x-ports/asciix/main/install.sh | ba
 The script detects your distro, installs the optional dependencies (ffmpeg,
 ImageMagick + Pango, a suitable font) and installs `asciix` into
 `~/.local/bin`.
+
+If Go is missing **or older than 1.24**, the script installs it automatically:
+first it tries your distro package, and if that is unavailable or too old it
+downloads the official Go toolchain (into `~/.local/share/asciix/go`). So you
+do not need Go preinstalled.
 
 Useful flags (with `curl | bash`, pass them after `bash -s --`):
 
