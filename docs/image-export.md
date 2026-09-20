@@ -42,7 +42,7 @@ asciix photo.jpg -m quad   -f jpg -o out.jpg
 | --- | --- | --- |
 | `--px <n\|WxH>` | `0` | Final width (`3840`) or exact canvas (`3840x2160`) |
 | `--cover` | off | Crop the source to the canvas aspect and fill it (no black bars) |
-| `--font <name>` | `Adwaita Mono` | Monospaced font |
+| `--font <name>` | `Adwaita Mono` | Monospaced font (auto-picked for `chinese`/`japanese`/`nerd`) |
 | `--font-size <n>` | `12` | Font size in points |
 | `--bg <color>` | `#000000` | Background color |
 | `--quality <n>` | `92` | JPEG quality (1-100) |
@@ -59,6 +59,9 @@ the result is white text on the background.
 | See the ASCII **characters** | `ascii`, `short`, `quad`, `braille` |
 | Look almost like the **photo** (pixel-art) | `blocks --color` |
 | Maximum detail in black and white | `braille --no-color` |
+| Chinese characters | `chinese` (font: Noto Sans CJK SC) |
+| Japanese characters | `japanese` (font: Noto Sans CJK JP) |
+| Nerd Font icons | `nerd` (font: Hack Nerd Font) |
 
 Examples:
 

@@ -274,6 +274,14 @@ func runConvert(args []string) {
 		}
 	}
 
+	md := modeByName(o.Mode)
+	if !wasSet("font") && md.Font != "" {
+		font = md.Font
+	}
+	if isRasterFormat(format) {
+		o.Aspect = md.imgAspect()
+	}
+
 	writeTo := outPath
 	outIsDir := writeTo != "" && (dirInput || len(files) > 1 || isDir(writeTo))
 	if outIsDir {

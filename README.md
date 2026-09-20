@@ -10,8 +10,9 @@ asciix photo.jpg -m braille --color
 
 ## Features
 
-- **6 styles**: `ascii`, `short`, `shade` (░▒▓█), `blocks` (▀▄█), `quad`,
-  `braille` (highest density).
+- **9 styles**: `ascii`, `short`, `shade` (░▒▓█), `blocks` (▀▄█), `quad`,
+  `braille` (highest density), `chinese`, `japanese` (Noto Sans CJK) and `nerd`
+  (Hack Nerd Font icons).
 - **24-bit color** plus tone controls: `--contrast`, `--gamma`, `--brightness`,
   `--saturation`, `--dither`, `--invert`.
 - **Exports**: terminal, `.txt`, `.html`, `.png`, `.jpg` (up to 4K UHD, with

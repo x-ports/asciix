@@ -66,7 +66,7 @@ func runVideo(args []string) {
 
 	m := modeByName(mode)
 	ratio := float64(ih) / float64(iw)
-	h := int(math.Round(float64(width) * ratio * 0.5))
+	h := int(math.Round(float64(width) * ratio * m.cellAspect()))
 	if h < 1 {
 		h = 1
 	}

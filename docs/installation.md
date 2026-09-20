@@ -98,3 +98,18 @@ List the available monospaced fonts:
 ```bash
 fc-list :mono | cut -d: -f2 | sort -u
 ```
+
+### Chinese / Japanese / Nerd Font styles
+
+- `chinese` and `japanese` need **Noto Sans CJK** (`noto-fonts-cjk` on Arch,
+  `fonts-noto-cjk` on Debian/Ubuntu). The install script includes it.
+- `nerd` needs a **Nerd Font** such as **Hack Nerd Font**. Install it from
+  [nerdfonts.com](https://www.nerdfonts.com/) or your distro/AUR (for example
+  `ttf-nerd-fonts-symbols` or `ttf-hack-nerd`). Without it, the icon glyphs may
+  show as boxes.
+
+```bash
+asciix photo.jpg -m chinese -o cn.jpg --px 2560
+asciix photo.jpg -m japanese -o jp.jpg --px 2560
+asciix photo.jpg -m nerd -o nerd.jpg --px 2560
+```

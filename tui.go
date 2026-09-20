@@ -80,6 +80,29 @@ func (u *uiConfig) applyPreset() {
 		u.mode, u.width, u.color = "blocks", tw, true
 		u.format, u.cover = "jpg", true
 	}
+	u.setMode(u.mode)
+}
+
+func isModeFont(f string) bool {
+	for _, m := range modes {
+		if m.Font != "" && m.Font == f {
+			return true
+		}
+	}
+	return false
+}
+
+// setMode changes the style and switches the export font to the style's
+// preferred one (CJK, Nerd Font), restoring the default when leaving them.
+func (u *uiConfig) setMode(name string) {
+	u.mode = name
+	m := modeByName(name)
+	switch {
+	case m.Font != "":
+		u.font = m.Font
+	case isModeFont(u.font):
+		u.font = "Adwaita Mono"
+	}
 }
 
 // --------------------------------------------------------------------- app ---
@@ -621,7 +644,7 @@ func (a *app) imageOpts() []opt {
 	opts = append(opts, opt{label: "Style", sep: true}, opt{
 		label: "style",
 		get:   func() string { return cfg.mode },
-		adj:   func(d int) { cfg.mode = cycle(cfg.mode, modeNames(), d) },
+		adj:   func(d int) { cfg.setMode(cycle(cfg.mode, modeNames(), d)) },
 	}, opt{
 		label: "width (cols)",
 		get:   func() string { return strconv.Itoa(cfg.width) },
@@ -1002,6 +1025,9 @@ func (a *app) convert() {
 		return
 	}
 	o := cfg.toOptions()
+	if isRasterFormat(cfg.format) {
+		o.Aspect = modeByName(cfg.mode).imgAspect()
+	}
 	if err := os.MkdirAll(cfg.outDir, 0o755); err != nil {
 		a.errMsg = err.Error()
 		return

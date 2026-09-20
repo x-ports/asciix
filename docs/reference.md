@@ -19,7 +19,7 @@ when there is a terminal; otherwise it prints the help.
 
 | Option | Description | Default |
 | --- | --- | --- |
-| `-m`, `--mode <mode>` | Style: `ascii`, `short`, `shade`, `blocks`, `quad`, `braille` | `ascii` |
+| `-m`, `--mode <mode>` | Style: `ascii`, `short`, `shade`, `blocks`, `quad`, `braille`, `chinese`, `japanese`, `nerd` | `ascii` |
 | `-w`, `--width <n>` | Width in characters | terminal width |
 | `--height <n>` | Height in lines | proportional |
 | `-o`, `--out <path>` | Output file or directory | terminal |

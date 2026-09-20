@@ -19,6 +19,18 @@ width and shows the result in color when the output is a terminal.
 | `blocks` | `▀▄█` and half blocks | 1×2 | With color it reconstructs the image (great for wallpapers) |
 | `quad` | `▖▗▘▝▚▞` | 2×2 | Quadrants, good balance |
 | `braille` | `⠿` (Unicode dots) | 2×4 | Highest density, best detail |
+| `chinese` | Chinese characters → 龘 | 1×1 (wide) | Needs Noto Sans CJK; text-heavy look |
+| `japanese` | Japanese kana + kanji | 1×1 (wide) | Needs Noto Sans CJK JP |
+| `nerd` | Nerd Font icons | 1×1 | Needs Hack Nerd Font; colorful icon art |
+
+CJK and Nerd styles carry their own cell proportions and automatically pick a
+suitable export font (`--font` still overrides). CJK characters are double-width
+in the terminal, so previews are wider than Latin styles.
+
+```bash
+asciix photo.jpg -m chinese --color
+asciix photo.jpg -m nerd -w 140 --color
+```
 
 ```bash
 asciix photo.jpg -m braille --color

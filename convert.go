@@ -21,6 +21,7 @@ type Options struct {
 	Saturation float64
 	Dither     bool
 	CropAR     float64
+	Aspect     float64
 }
 
 // bayer4 is a 4x4 ordered-dither matrix (values 0..15).
@@ -65,8 +66,13 @@ func Convert(img image.Image, o Options) *Grid {
 	w := o.Width
 	h := o.Height
 	if h < 1 {
-		// A terminal cell is roughly twice as tall as it is wide.
-		h = int(math.Round(float64(w) * ratio * 0.5))
+		// A terminal cell is roughly twice as tall as it is wide, but some
+		// styles (CJK, Nerd Font) use different cell proportions.
+		aspect := o.Aspect
+		if aspect <= 0 {
+			aspect = m.cellAspect()
+		}
+		h = int(math.Round(float64(w) * ratio * aspect))
 		if h < 1 {
 			h = 1
 		}

@@ -172,32 +172,32 @@ case "$PM" in
 pacman)
 	GO_PKGS=(go)
 	MEDIA_PKGS=(ffmpeg imagemagick)
-	FONT_PKGS=(adwaita-fonts noto-fonts)
+	FONT_PKGS=(adwaita-fonts noto-fonts noto-fonts-cjk)
 	;;
 apt)
 	GO_PKGS=(golang-go git)
 	MEDIA_PKGS=(ffmpeg imagemagick libpango-1.0-0 librsvg2-common)
-	FONT_PKGS=(fonts-freefont-ttf fonts-noto-core fonts-dejavu-core)
+	FONT_PKGS=(fonts-freefont-ttf fonts-noto-core fonts-dejavu-core fonts-noto-cjk)
 	;;
 dnf)
 	GO_PKGS=(golang git)
 	MEDIA_PKGS=(ffmpeg-free ImageMagick pango)
-	FONT_PKGS=(gnu-free-mono-fonts google-noto-sans-mono-fonts)
+	FONT_PKGS=(gnu-free-mono-fonts google-noto-sans-mono-fonts google-noto-sans-cjk-fonts)
 	;;
 zypper)
 	GO_PKGS=(go git)
 	MEDIA_PKGS=(ffmpeg ImageMagick pango-tools)
-	FONT_PKGS=(gnu-free-fonts google-noto-sans-mono-fonts)
+	FONT_PKGS=(gnu-free-fonts google-noto-sans-mono-fonts noto-sans-cjk-fonts)
 	;;
 apk)
 	GO_PKGS=(go git)
 	MEDIA_PKGS=(ffmpeg imagemagick pango)
-	FONT_PKGS=(font-noto font-freefont)
+	FONT_PKGS=(font-noto font-freefont font-noto-cjk)
 	;;
 brew)
 	GO_PKGS=(go)
 	MEDIA_PKGS=(ffmpeg imagemagick)
-	FONT_PKGS=(font-dejavu font-noto-sans-mono)
+	FONT_PKGS=(font-dejavu font-noto-sans-mono font-noto-sans-cjk)
 	;;
 esac
 
