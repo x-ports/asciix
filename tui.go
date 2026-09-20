@@ -305,7 +305,11 @@ func (a *app) drawForm(c *canvas, opts []opt, x, y, w, h int, active bool) {
 	if a.optTop < 0 {
 		a.optTop = 0
 	}
-	c.put(x, y-1, trunc("Options", w), stBold)
+	head := "Options"
+	if active {
+		head = "> Options"
+	}
+	c.put(x, y-1, trunc(head, w), stBold)
 	for i := 0; i < listH && a.optTop+i < len(opts); i++ {
 		idx := a.optTop + i
 		o := opts[idx]
@@ -315,7 +319,11 @@ func (a *app) drawForm(c *canvas, opts []opt, x, y, w, h int, active bool) {
 		}
 		var line string
 		if o.get != nil {
-			line = fmt.Sprintf("%-18s %s", o.label, o.get())
+			val := o.get()
+			if o.adj != nil {
+				val = "‹ " + val + " ›"
+			}
+			line = fmt.Sprintf("%-18s %s", o.label, val)
 		} else {
 			line = "  " + o.label
 		}
